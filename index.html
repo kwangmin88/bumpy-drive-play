@@ -47290,6 +47290,14 @@ void main() {
     load("bumpy.save", {})
   );
   var persist = () => save("bumpy.save", store);
+  try {
+    const lv = Number(new URLSearchParams(location.search).get("lv"));
+    if (lv > 0 && !window.__toss) {
+      store.level = lv;
+      store.top = Math.max(store.top || 0, lv - 1);
+    }
+  } catch (e3) {
+  }
   function tickFuel(now2 = Date.now()) {
     if (typeof store.fuel !== "number") {
       store.fuel = FUEL_MAX;
