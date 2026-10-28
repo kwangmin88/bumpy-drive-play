@@ -46437,6 +46437,11 @@ void main() {
     }
     /** 결승선. 방금 놓은 땅의 s 미터 자리(안 주면 끝에서 3.5m 앞 — 골인하고 설 자리를 남긴다). */
     goal(s2) {
+      if (s2 === void 0 && this.more && this.more.length && !this.extended) {
+        this.extended = true;
+        for (const [k, ph] of this.more) PIECES[k](this, ph || 0);
+        this.flat(3);
+      }
       this.goalAt = this.on(s2 === void 0 ? this.seg.len - 3.5 : s2);
       return this;
     }
@@ -46453,10 +46458,142 @@ void main() {
       return { name, kind: this.kind, parts: this.parts, start: this.startAt || { x: 1.5, y: 0 }, goal: this.goalAt, goalDir: this.goalDir || 1, via: this.vias || [], killY: r2(low - 7), end: r2(this.x), left: r2(left) };
     }
   };
+  var PIECES = {
+    lift: (c2, ph) => c2.flat(1).gap(0.1).lift(4, { dx: 3, period: 5, phase: ph }).gap(0.1).flat(1),
+    // 옆으로 오가는 발판 기다려 타기
+    up: (c2, ph) => c2.flat(1).gap(0.1).lift(4, { dy: 2.5, period: 5, phase: ph }).gap(0.1).flat(1),
+    // 오르는 발판
+    door: (c2, ph) => c2.flat(1).gap(0.1).trapdoor(4, { period: 3.2, phase: ph }).gap(0.1).flat(1),
+    // 열리는 바닥
+    draw: (c2, ph) => c2.flat(1).gap(0.1).drawbridge(5, { period: 4, phase: ph }).gap(0.1).flat(1),
+    // 도개교
+    spike: (c2, ph) => c2.flat(4).popspikes(2.5, 2, { period: 2.4, phase: ph }),
+    // 튀어나오는 가시
+    press: (c2, ph) => c2.flat(4).press(3.5, { period: 2.6, phase: ph }),
+    // 누르개
+    saw: (c2, ph) => c2.flat(4).saw(3, 0.4, { dy: 2.4, period: 2.4, phase: ph }),
+    // 오르내리는 톱
+    isle: (c2) => c2.ramp(1, 18).gap(2.4, -0.4).flat(1).gap(2, -0.4).flat(1),
+    // 좁은 섬 둘(세게 가면 지나친다)
+    hill: (c2) => c2.curve(5, 0, 38).curve(3, 38, 0).flat(0.5).gap(1.6, -1.6).flat(1),
+    // 가파른 언덕 뒤 낭떠러지
+    crumb: (c2) => c2.gap(0.1).crumble(5).gap(0.1).flat(1)
+    // 무너지는 다리(멈추면 떨어진다)
+  };
+  var MORE = {
+    "\uCCAB \uAE30\uC5B4": [["up", 0.5]],
+    // 1판 · 대충 18%
+    "\uCD9C\uB801\uB2E4\uB9AC": [["hill", 0]],
+    // 3판 · 대충 28%
+    "\uC624\uB974\uB9C9": [["press", 0]],
+    // 4판 · 대충 3%
+    "\uB9AC\uBB34\uC9C4 \uD131": [["hill", 0.75]],
+    // 5판 · 대충 5%
+    "\uBC00\uC5B4 \uB118\uAE30\uAE30": [["isle", 0.75]],
+    // 6판 · 대충 2%
+    "\uBCBD\uB3CC \uBD80\uC218\uAE30": [["press", 0.75]],
+    // 7판 · 대충 12%
+    "\uB124\uBAA8 \uBC14\uD034": [["saw", 0]],
+    // 8판 · 대충 0%
+    "\uACE0\uB9AC \uB3CC\uAE30": [["up", 0.5]],
+    // 9판 · 대충 10%
+    "\uB3C4\uAC1C\uAD50": [["crumb", 0.75]],
+    // 10판 · 대충 32%
+    "\uB85C\uCF13 \uCC28": [["hill", 0.5], ["spike", 0]],
+    // 11판 · 대충 2%
+    "\uD754\uB4E4\uC5B4 \uC624\uB974\uAE30": [["spike", 0], ["press", 0.5]],
+    // 12판 · 대충 12%
+    "\uCD08\uACE0\uC18D \uCC28": [["lift", 0], ["isle", 0.5]],
+    // 14판 · 대충 0%
+    "\uAC70\uB300 \uBC14\uD034": [["saw", 0], ["isle", 0]],
+    // 16판 · 대충 0%
+    "\uB3CC\uBB34\uB354\uAE30": [["crumb", 0.5], ["press", 0.25]],
+    // 17판 · 대충 15%
+    "\uD2B8\uB7ED \uC9C0\uBD95": [["door", 0], ["draw", 0.5]],
+    // 18판 · 대충 0%
+    "\uACF5 \uC6C5\uB369\uC774": [["press", 0.5], ["up", 0]],
+    // 19판 · 대충 0%
+    "\uC0C1\uC790 \uBA54\uC6B0\uAE30": [["draw", 0], ["door", 0]],
+    // 20판 · 대충 2%
+    "\uD2B8\uB808\uC77C\uB7EC": [["up", 0], ["crumb", 0.25]],
+    // 21판 · 대충 2%
+    "\uC9C0\uB124 \uD2B8\uB7ED": [["draw", 0.25], ["spike", 0.25]],
+    // 22판 · 대충 2%
+    "\uBCBD \uD0C0\uAE30": [["hill", 0.5], ["spike", 0]],
+    // 23판 · 대충 7%
+    "\uB192\uC740 \uD131 \uB458": [["crumb", 0.25], ["press", 0.25]],
+    // 24판 · 대충 0%
+    "\uBE60\uB974\uAC8C \uB290\uB9AC\uAC8C": [["door", 0.75], ["hill", 0.75]],
+    // 25판 · 대충 18%
+    "\uD0F1\uD06C": [["press", 0.25], ["saw", 0.25]],
+    // 26판 · 대충 27%
+    "\uBC14\uD034 \uB2EC\uB9B0 \uC9D1": [["up", 0.75], ["crumb", 0.25]],
+    // 28판 · 대충 5%
+    "\uAC00\uC2DC\uBC2D": [["spike", 0], ["lift", 0]],
+    // 29판 · 대충 5%
+    "\uB808\uC774\uC800": [["draw", 0], ["hill", 0.75]],
+    // 30판 · 대충 7%
+    "\uC9D5 \uBC15\uC740 \uBC14\uD034": [["isle", 0.75], ["press", 0.25]],
+    // 32판 · 대충 5%
+    "\uC2B9\uAC15\uAE30 \uD0D1": [["draw", 0], ["crumb", 0.25]],
+    // 33판 · 대충 3%
+    "2\uCE35 \uCC28": [["crumb", 0.5], ["hill", 0.75]],
+    // 34판 · 대충 15%
+    "\uB3C4\uBBF8\uB178": [["spike", 0.75], ["press", 0.25], ["door", 0.5]],
+    // 36판 · 대충 0%
+    "\uC791\uC740 \uCC28": [["crumb", 0.75], ["hill", 0.75], ["press", 0.75]],
+    // 37판 · 대충 3%
+    "\uC6A9\uC218\uCCA0 \uB2E4\uB9AC": [["crumb", 0.25], ["press", 0.5], ["spike", 0.75]],
+    // 38판 · 대충 0%
+    "\uB2EC \uD0D0\uC0AC\uCC28": [["isle", 0.25], ["press", 0.75], ["door", 0.75]],
+    // 40판 · 대충 3%
+    "\uC6A9\uC218\uCCA0 \uD310": [["crumb", 0.25], ["spike", 0], ["press", 0]],
+    // 41판 · 대충 15%
+    "\uBD80\uC2A4\uD130": [["draw", 0], ["lift", 0], ["isle", 0.25]],
+    // 42판 · 대충 3%
+    "\uC8FC\uCC28\uC7A5": [["saw", 0], ["isle", 0], ["crumb", 0.25]],
+    // 43판 · 대충 7%
+    "\uC2A4\uCF00\uC774\uD2B8\uBCF4\uB4DC": [["hill", 0.75], ["press", 0.25], ["door", 0.75]],
+    // 44판 · 대충 3%
+    "\uCC28 \uBD84\uC1C4\uAE30": [["up", 0.5], ["isle", 0], ["door", 0]],
+    // 45판 · 대충 3%
+    "\uACE0\uB9AC \uB458": [["saw", 0.5], ["crumb", 0.5], ["press", 0.5]],
+    // 46판 · 대충 7%
+    "\uC904\uB2E4\uB9AC": [["isle", 0.5], ["door", 0.25], ["hill", 0.75]],
+    // 47판 · 대충 7%
+    "\uB290\uB9B0 \uD654\uBA74": [["crumb", 0], ["press", 0.25], ["up", 0.5]],
+    // 48판 · 대충 0%
+    "\uC0C1\uC790 \uBC00\uC5B4 \uB123\uAE30": [["press", 0.25], ["saw", 0.5], ["isle", 0]],
+    // 50판 · 대충 2%
+    "\uC2A4\uD0A4 \uD65C\uAC15": [["spike", 0.5], ["crumb", 0], ["press", 0.5]],
+    // 51판 · 대충 2%
+    "\uD1B1 \uBD84\uC1C4\uAE30": [["isle", 0.75], ["draw", 0], ["crumb", 0.25]],
+    // 52판 · 대충 2%
+    "\uB3C4\uB294 \uBC29": [["spike", 0.75], ["isle", 0], ["crumb", 0.5]],
+    // 53판 · 대충 0%
+    "\uD64D\uC218": [["spike", 0], ["isle", 0], ["lift", 0.5]],
+    // 54판 · 대충 5%
+    "\uB208\uC0AC\uD0DC": [["hill", 0], ["draw", 0.75], ["press", 0.25]],
+    // 55판 · 대충 2%
+    "\uADF9\uC9C0 \uC624\uB974\uAE30": [["door", 0.75], ["hill", 0.5], ["press", 0.5]],
+    // 56판 · 대충 3%
+    "\uB0AE\uC740 \uCC28": [["hill", 0.75], ["crumb", 0.5], ["saw", 0.25]],
+    // 57판 · 대충 10%
+    "\uAC00\uB77C\uC549\uB294 \uB2E4\uB9AC": [["crumb", 0.25], ["spike", 0.5], ["door", 0.75]],
+    // 58판 · 대충 3%
+    "\uB300\uD3EC \uC694\uC0C8": [["crumb", 0.5], ["lift", 0], ["isle", 0]],
+    // 59판 · 대충 2%
+    "\uB9C8\uC9C0\uB9C9 \uD310": [["saw", 0.25], ["hill", 0], ["crumb", 0.25]]
+    // 60판 · 대충 3%
+  };
   var make = (name, kind, draw, look, extra) => {
+    const more = extra && extra.more || MORE[name];
     const c2 = new Course(kind);
+    c2.more = more;
     draw(c2);
-    return Object.assign(c2.done(name), { look: look || kind }, extra);
+    const lv = Object.assign(c2.done(name), { look: look || kind }, extra, { more: c2.extended ? more : void 0 });
+    Object.defineProperty(lv, "remake", { value: (m) => make(name, kind, draw, look, Object.assign({}, extra, { more: m })) });
+    return lv;
   };
   var G = "grass";
   var S = "snow";
